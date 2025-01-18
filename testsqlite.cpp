@@ -1,6 +1,8 @@
 #include <sqlite3.h>
 #include <iostream>
 
+int callback(void *NotUsed, int argc, char **argv, char **azColName);
+
 int main() {
     sqlite3 *db;
     int rc = sqlite3_open("test.db", &db);
@@ -38,6 +40,21 @@ int main() {
         std::cout << "Record created successfully" << std::endl;
     }
 
+    sql = "SELECT * FROM users;"; 
+    char *zErrMsg = 0;
+    rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
+    if (rc != SQLITE_OK) {
+        std::cerr << "SQL error: " << zErrMsg << std::endl;
+        sqlite3_free(zErrMsg);
+    }
+
     sqlite3_close(db);
+    return 0;
+}
+int callback(void *NotUsed, int argc, char **argv, char **azColName) {
+    for (int i = 0; i < argc; i++) {
+        std::cout << azColName[i] << " = " << (argv[i] ? argv[i] : "NULL") << std::endl;
+    }
+    std::cout << std::endl;
     return 0;
 }
